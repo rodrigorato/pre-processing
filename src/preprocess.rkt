@@ -23,7 +23,26 @@
 (define-syntax-rule (def-active-token token-name token-func-args token-func-code)
   (add-active-token token-name (lambda token-func-args token-func-code)))
 
-; TODO: Not yet implemented
+; TODO - Implement
 (define (process-string s)
   s)
+
+; +--------------------------+
+; | Active Token Definitions |
+; +--------------------------+
+
+; Local Type Inference
+; TODO - Implement
+(def-active-token "var" (str)
+  str)
+
+; String Interpolation 
+; TODO - Implement
+(def-active-token "#" (str)
+  str)
+
+; Type Aliases
+; TODO - Implement
+(def-active-token "alias" (str)
+  str)
 
