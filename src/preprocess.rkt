@@ -1,6 +1,9 @@
 #lang racket
 (provide add-active-token def-active-token process-string)
 
+; +------------------------------+
+; | PRE-PROCESSOR IMPLEMENTATION |
+; +------------------------------+
 
 ; Defines a hash map, mapping active tokens to functions
 ; An active token's function is what must be executed when it is found
