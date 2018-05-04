@@ -16,11 +16,11 @@
 (displayln 
   (process-string
 #<<END
-    alias display = System.out.print;
-    public class App {
-        public void f() {
-            display("f");
-        }
+alias display = System.out.print;
+public class App {
+    public void f() {
+        display("f");
     }
+}
 END
   ))
