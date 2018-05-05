@@ -25,6 +25,9 @@
 
 ; TODO - Implement
 (define (process-string s)
+  (let ((token-names (hash-keys active-tokens)))
+    (for ([token token-names])
+      (set! s (apply-token-proc token s))))
   s)
 
 ; Checks if a given token is to be applied over a string and returns the string accordingly
