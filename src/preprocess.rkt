@@ -37,8 +37,8 @@
        (for ([pos token-positions])
         (set! str 
           (string-append (substring str 0 (car pos)) 
-                         ((hash-ref active-tokens token) (substring str (cdr pos))))
-          )))
+                         ((hash-ref active-tokens token) (substring str (cdr pos)))))
+        ))
     str))
 
 
