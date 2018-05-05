@@ -1,5 +1,5 @@
-#lang racket
-(provide add-active-token def-active-token process-string)
+; #lang racket
+; (provide add-active-token def-active-token process-string)
 
 ; +------------------------------+
 ; | PRE-PROCESSOR IMPLEMENTATION |
@@ -83,10 +83,6 @@
       (set! final (string-append type " " str))
       (set! final (string-append "var " str)))
     final))
-
-
-(displayln (process-string "var i = new Integer[]();"))
-(displayln (process-string "var i = new Integer[];"))
 
 ; String Interpolation 
 ; TODO - Implement
