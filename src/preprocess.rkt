@@ -27,6 +27,17 @@
 (define (process-string s)
   s)
 
+
+
+; Checks if a given token is present in a given string
+; If it is, returns a list of lists, where the inner ones are like (str-initial-pos str-final-pos)
+; If it is not, it returns #f
+(define (has-token? str token)
+  (let ((positions (regexp-match-positions (regexp token) str)))
+    (if (not (null? positions))
+        positions
+        #f)))
+
 ; +--------------------------+
 ; | Active Token Definitions |
 ; +--------------------------+
