@@ -84,10 +84,24 @@
       (set! final (string-append "var " str)))
     final))
 
-; String Interpolation 
-; TODO - Implement
+; String Interpolation
+
+; Find locations for interpolation, rebuild string around them and then add the remainder of the string  
+(define (interpolate-string str)
+  (let* ((scope-string (regexp-match #rx".*[\"];?" str))
+         (s (car scope-string))
+         (last-point 0)
+         (new-s "")
+         (interpol-pos (regexp-match-positions* #rx"#{(.*?)}" s)))
+    (for ([p interpol-pos])
+         (set! new-s (string-append new-s (substring s last-point (car p)) "\" + (" (substring s (+ (car p) 2) (- (cdr p) 1)) ") + \"" ))
+      (set! last-point (cdr p))
+    )
+    (set! new-s (string-append new-s (substring s (cdr (last interpol-pos)))))
+    new-s))
+
 (def-active-token "#" (str)
-  str)
+  (interpolate-string str))
 
 ; Type Aliases
 ; TODO - Implement
