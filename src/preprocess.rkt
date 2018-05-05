@@ -76,8 +76,17 @@
     type-str))
 
 ; Implements local type inference using type-of-new to find the type of a given initialization
-(def-active-token "var" (str)
-  (string-append (type-of-new str) str))
+(def-active-token "var " (str)
+  (let ((type (type-of-new str))
+        (final str))
+    (if type
+      (set! final (string-append type " " str))
+      (set! final (string-append "var " str)))
+    final))
+
+
+(displayln (process-string "var i = new Integer[]();"))
+(displayln (process-string "var i = new Integer[];"))
 
 ; String Interpolation 
 ; TODO - Implement
