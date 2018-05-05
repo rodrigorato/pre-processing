@@ -84,24 +84,31 @@
       (set! final (string-append "var " str)))
     final))
 
-; String Interpolation
+; String Interpolation 
 
-; Find locations for interpolation, rebuild string around them and then add the remainder of the string  
+; rebuilds string by extracting the interpolated expressions, building a new string around them and then just adding the remainder of the string
 (define (interpolate-string str)
   (let* ((scope-string (regexp-match #rx".*[\"];?" str))
          (s (car scope-string))
          (last-point 0)
          (new-s "")
-         (interpol-pos (regexp-match-positions* #rx"#{(.*?)}" s)))
+         (interpol-pos (regexp-match-positions* #rx"#{(.*?)}" s))) ; get location of all interpolations
     (for ([p interpol-pos])
-         (set! new-s (string-append new-s (substring s last-point (car p)) "\" + (" (substring s (+ (car p) 2) (- (cdr p) 1)) ") + \"" ))
-      (set! last-point (cdr p))
+         (set! new-s (string-append new-s (substring s last-point (car p)) "\" + (" (substring s (+ (car p) 2) (- (cdr p) 1)) ") + \"" )) ; rebuild string the right way
+      (set! last-point (cdr p)) ; store where we stoped the last time
     )
-    (set! new-s (string-append new-s (substring s (cdr (last interpol-pos)))))
+    (set! new-s (string-append new-s (substring s (cdr (last interpol-pos))))) ; no other occurences found so just add the rest of the string
     new-s))
 
+
+; interpolates string by using our own predefined function
 (def-active-token "#" (str)
-  (interpolate-string str))
+  (if (equal? 0 (car ( first(regexp-match-positions "\"" str))));check if we are at the start of a string
+    (interpolate-string str) ; if so interpolate
+    (string-append "#" str)) ; if not just readd the token since we are in the middle of a string
+  )
+
+;(displayln (process-string "#\"First #{a}, then #{a+b}, finally #{b*c}.\";"))
 
 ; Type Aliases
 ; TODO - Implement
