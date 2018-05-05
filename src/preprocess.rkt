@@ -30,6 +30,10 @@
       (set! s (apply-token-proc token s))))
   s)
 
+; Returns #t if the strings are different, #f otherwise
+(define (is-changed? this that)
+  (not (string=? this that)))
+
 ; Checks if a given token is to be applied over a string and returns the string accordingly
 (define (apply-token-proc token str)
   (let ((token-positions (has-token? str token)))
