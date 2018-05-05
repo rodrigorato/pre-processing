@@ -1,5 +1,5 @@
-; #lang racket
-; (provide add-active-token def-active-token process-string)
+#lang racket
+(provide add-active-token def-active-token process-string)
 
 ; +------------------------------+
 ; | PRE-PROCESSOR IMPLEMENTATION |
