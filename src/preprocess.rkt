@@ -65,10 +65,19 @@
 ; | Active Token Definitions |
 ; +--------------------------+
 
-; Local Type Inference
-; TODO - Implement
+; Finds type name of a given string which includes a type initialization using the "new" keyword
+(define (type-of-new str)
+  (let ((new-keyword-pos (regexp-match-positions #rx"new[ ]*" str))
+         (type-str #f))
+      (let ((first-parenthesis-pos (regexp-match-positions #rx"new[ ]*(.*?)[(]" str)))
+        (when first-parenthesis-pos
+          (set! type-str (substring str (cdar new-keyword-pos) (- (cdar first-parenthesis-pos) 1)))
+        ))
+    type-str))
+
+; Implements local type inference using type-of-new to find the type of a given initialization
 (def-active-token "var" (str)
-  str)
+  (string-append (type-of-new str) str))
 
 ; String Interpolation 
 ; TODO - Implement
