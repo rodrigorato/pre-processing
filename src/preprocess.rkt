@@ -35,11 +35,10 @@
   (let ((token-positions (has-token? str token)))
     (if token-positions
        (for ([pos token-positions])
-        (set! str (string-append 
-          (substring str 0 (car pos))
-          ((hash-ref active-tokens token) (substring str (cdr pos)))))
-         )
-       str)
+        (set! str 
+          (string-append (substring str 0 (car pos)) 
+                         ((hash-ref active-tokens token) (substring str (cdr pos))))
+          )))
     str))
 
 
