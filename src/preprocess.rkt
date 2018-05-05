@@ -45,7 +45,7 @@
   (let ((token-positions (has-token? str token)))
     (when token-positions
        (for ([pos token-positions])
-        (set! str 
+         (set! str 
           (string-append (substring str 0 (car pos)) 
                          ((hash-ref active-tokens token) (substring str (cdr pos)))))
         ))
@@ -121,8 +121,39 @@
     (string-append "#" str))
   )
 
+; Gets the value that must be associated with this alias name
+(define (alias-value str) 
+  (let ((definition-equals-pos (regexp-match-positions #rx"=[ ]*" str))
+        (value #f))
+    (let ((semi-colon-pos (regexp-match-positions #rx"=[ ]*(.*?)[;]" str)))
+      (when semi-colon-pos
+        (set! value (substring str (cdar definition-equals-pos) (- (cdar semi-colon-pos) 1)))
+        ))
+    value))
+
+; Gets the alias name from a particular string containing the alias active token
+(define (alias-name str)
+  (car (string-split str)))
+
+; Given an alias name and its value, replace it along a given string and return it
+; THIS IS WRONG TODO FIXME 
+(define (replace-aliases str alias-name alias-value)
+  (let ((str-regex (string-append "[^_a-zA-Z0-9]" alias-name)))
+    (regexp-replace* (regexp str-regex) str alias-value)
+    ))
+
+; Returns a string stripped from its first line
+(define (string-after-newline str) 
+  (match (regexp-match-positions "\n" str)
+    ((list (cons start end)) (substring str end))
+    (else "")))
+
 ; Type Aliases
 ; TODO - Implement
 (def-active-token "alias" (str)
-  str)
+  (let* ((name (alias-name str))
+        (value (alias-value str))
+        (str-final (string-after-newline str)))
+    (set! str-final (replace-aliases str-final name value))
+    str-final))
 
