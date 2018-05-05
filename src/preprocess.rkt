@@ -33,7 +33,7 @@
 ; Checks if a given token is to be applied over a string and returns the string accordingly
 (define (apply-token-proc token str)
   (let ((token-positions (has-token? str token)))
-    (if token-positions
+    (when token-positions
        (for ([pos token-positions])
         (set! str 
           (string-append (substring str 0 (car pos)) 
