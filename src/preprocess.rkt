@@ -23,11 +23,17 @@
 (define-syntax-rule (def-active-token token-name token-func-args token-func-code)
   (add-active-token token-name (lambda token-func-args token-func-code)))
 
-; TODO - Implement
+; Iterates over the known tokens and applies them to s until no change is made
 (define (process-string s)
-  (let ((token-names (hash-keys active-tokens)))
+  (let ((token-names (hash-keys active-tokens))
+        (previous-s s))
+
     (for ([token token-names])
-      (set! s (apply-token-proc token s))))
+      (set! s (apply-token-proc token s)))
+
+    (when (is-changed? s previous-s)
+      (set! s (process-string s)))
+    )
   s)
 
 ; Returns #t if the strings are different, #f otherwise
