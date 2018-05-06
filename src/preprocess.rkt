@@ -95,7 +95,8 @@
          (last-point 0)
          (new-s "")
          (interpol-pos (regexp-match-positions* #rx"#{(.*?)}" s))) ; get location of all interpolations
-    (for ([p interpol-pos])
+    (cond [(null? interpol-pos) (set! new-s str)] ; interpolation required but there is nothing to do
+    [else (for ([p interpol-pos])
       ; rebuild string the right way
       (set! new-s
             (string-append
@@ -109,7 +110,7 @@
      ; no other occurences found so just add the rest of the string
     (set! new-s
           (string-append new-s
-          (substring s (cdr (last interpol-pos)))))
+          (substring str (cdr (last interpol-pos)))))])
     new-s))
 
 
@@ -138,9 +139,24 @@
 ; Given an alias name and its value, replace it along a given string and return it
 ; THIS IS WRONG TODO FIXME 
 (define (replace-aliases str alias-name alias-value)
-  (let ((str-regex (string-append "[^_a-zA-Z0-9]" alias-name)))
-    (regexp-replace* (regexp str-regex) str alias-value)
-    ))
+  (let* ((str-regex (string-append "[^_a-zA-Z0-9]" alias-name "[^_a-zA-Z0-9]"))
+        (locations (regexp-match-positions* (regexp str-regex) str)); find locations of alias uses
+        (last-pos 0)
+        (new-s "")
+        )
+    (for ([l locations])
+      ; take string up until the place where alias is used and replace by true type
+      (set! new-s
+            (string-append
+             new-s
+             (substring str last-pos (+ (car l) 1))
+             alias-value))
+      (set! last-pos (- (cdr l) 1))
+      )
+    (set! new-s
+          (string-append new-s
+          (substring str (cdr (last locations)))))
+    new-s))
 
 ; Returns a string stripped from its first line
 (define (string-after-newline str) 
@@ -156,4 +172,3 @@
         (str-final (string-after-newline str)))
     (set! str-final (replace-aliases str-final name value))
     str-final))
-
