@@ -139,7 +139,7 @@
 ; Given an alias name and its value, replace it along a given string and return it
 ; THIS IS WRONG TODO FIXME 
 (define (replace-aliases str alias-name alias-value)
-  (let* ((str-regex (string-append "[^_a-zA-Z0-9]" alias-name "[^_a-zA-Z0-9]"))
+  (let* ((str-regex (string-append "[^_a-zA-Z0-9]" alias-name))
         (locations (regexp-match-positions* (regexp str-regex) str)); find locations of alias uses
         (last-pos 0)
         (new-s "")
@@ -151,7 +151,7 @@
              new-s
              (substring str last-pos (+ (car l) 1))
              alias-value))
-      (set! last-pos (- (cdr l) 1))
+      (set! last-pos (cdr l))
       )
     (set! new-s
           (string-append new-s
