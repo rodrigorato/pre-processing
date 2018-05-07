@@ -48,7 +48,8 @@
          (set! str 
           (string-append (substring str 0 (car pos)) 
                          ((hash-ref active-tokens token) (substring str (cdr pos)))))
-        ))
+        )
+      )
     str))
 
 
@@ -67,21 +68,24 @@
 
 ; Finds type name of a given string which includes a type initialization using the "new" keyword
 (define (type-of-new str)
-  (let ((new-keyword-pos (regexp-match-positions #rx"new[ ]*" str))
+  (let ((new-keyword-pos (regexp-match-positions #rx"[\\w]*[ ]*=[ ]*new[ ]*" str))
          (type-str #f))
-      (let ((first-parenthesis-pos (regexp-match-positions #rx"new[ ]*(.*?)[(]" str)))
+    (cond
+      [new-keyword-pos
+      (let ((first-parenthesis-pos (regexp-match-positions #rx"new[\\s]*(.*?)[(]" str)))
         (when first-parenthesis-pos
           (set! type-str (substring str (cdar new-keyword-pos) (- (cdar first-parenthesis-pos) 1)))
-        ))
+        ))]
+          [else (set! type-str #f)])
     type-str))
 
 ; Implements local type inference using type-of-new to find the type of a given initialization
-(def-active-token "var " (str)
+(def-active-token "var" (str)
   (let ((type (type-of-new str))
         (final str))
     (if type
-      (set! final (string-append type " " str))
-      (set! final (string-append "var " str)))
+      (set! final (string-append type str))
+      (set! final (string-append "var" str)))
     final))
 
 
@@ -124,13 +128,13 @@
 
 ; Gets the value that must be associated with this alias name
 (define (alias-value str) 
-  (let ((definition-equals-pos (regexp-match-positions #rx"=[ ]*" str))
+  (let ((definition-equals-pos (regexp-match-positions #rx"=[\\s]*" str))
         (value #f))
-    (let ((semi-colon-pos (regexp-match-positions #rx"=[ ]*(.*?)[;]" str)))
+    (let ((semi-colon-pos (regexp-match-positions #rx"=[\\s]*(.*?)[;]" str)))
       (when semi-colon-pos
         (set! value (substring str (cdar definition-equals-pos) (- (cdar semi-colon-pos) 1)))
         ))
-    value))
+    (string-trim value)))
 
 ; Gets the alias name from a particular string containing the alias active token
 (define (alias-name str)
@@ -159,8 +163,8 @@
     new-s))
 
 ; Returns a string stripped from its first line
-(define (string-after-newline str) 
-  (match (regexp-match-positions "\n" str)
+(define (string-after-semi-colon str) 
+  (match (regexp-match-positions ";" str)
     ((list (cons start end)) (substring str end))
     (else "")))
 
@@ -169,6 +173,30 @@
 (def-active-token "alias" (str)
   (let* ((name (alias-name str))
         (value (alias-value str))
-        (str-final (string-after-newline str)))
+        (str-final (string-after-semi-colon str)))
     (set! str-final (replace-aliases str-final name value))
     str-final))
+
+
+(define test-str
+#<<END
+alias Cache =
+         ConcurrentSkipListMap<String,List<Map<String,Object>>>;
+
+var teste2 = new Integer();
+
+String s = "var teste1 = new Integer();";
+
+String s2 = "var teste1 = new String();";
+
+var teste2 = new Integer();
+
+String str = #"First #{a}, then #{a+b}, finally #{b*c}.";
+
+public static Cache mergeCaches(Cache a, Cache b) {
+
+var temp = new Cache();
+
+}
+END
+)
