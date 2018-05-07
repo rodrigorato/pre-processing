@@ -68,13 +68,16 @@
 
 ; Finds type name of a given string which includes a type initialization using the "new" keyword
 (define (type-of-new str)
-  (let ((new-keyword-pos (regexp-match-positions #rx"[\\w]*[ ]*=[ ]*new[ ]*" str))
-         (type-str #f))
+  (let* ((good-str (string-replace str "\n" ""))
+        (new-keyword-pos (regexp-match-positions #rx"[\\w]*[ ]*=[ ]*new[ ]*" good-str))
+         (type-str #f)
+         )
     (cond
+      [(not (equal? 0 (caar (regexp-match-positions #rx"[ \n\r\t]" good-str)))) (set! type-str #f)]
       [new-keyword-pos
-      (let ((first-parenthesis-pos (regexp-match-positions #rx"new[\\s]*(.*?)[(]" str)))
+      (let ((first-parenthesis-pos (regexp-match-positions #rx"new[\\s]*(.*?)[(]" good-str)))
         (when first-parenthesis-pos
-          (set! type-str (substring str (cdar new-keyword-pos) (- (cdar first-parenthesis-pos) 1)))
+          (set! type-str (substring good-str (cdar new-keyword-pos) (- (cdar first-parenthesis-pos) 1)))
         ))]
           [else (set! type-str #f)])
     type-str))
@@ -148,7 +151,8 @@
         (last-pos 0)
         (new-s "")
         )
-    (for ([l locations])
+    (cond [(null? locations) (set! new-s str)]
+    [else (for ([l locations])
       ; take string up until the place where alias is used and replace by true type
       (set! new-s
             (string-append
@@ -159,7 +163,7 @@
       )
     (set! new-s
           (string-append new-s
-          (substring str (cdr (last locations)))))
+          (substring str (cdr (last locations)))))])
     new-s))
 
 ; Returns a string stripped from its first line
@@ -176,27 +180,3 @@
         (str-final (string-after-semi-colon str)))
     (set! str-final (replace-aliases str-final name value))
     str-final))
-
-
-(define test-str
-#<<END
-alias Cache =
-         ConcurrentSkipListMap<String,List<Map<String,Object>>>;
-
-var teste2 = new Integer();
-
-String s = "var teste1 = new Integer();";
-
-String s2 = "var teste1 = new String();";
-
-var teste2 = new Integer();
-
-String str = #"First #{a}, then #{a+b}, finally #{b*c}.";
-
-public static Cache mergeCaches(Cache a, Cache b) {
-
-var temp = new Cache();
-
-}
-END
-)
