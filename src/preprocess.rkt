@@ -68,7 +68,7 @@
 
 ; Finds type name of a given string which includes a type initialization using the "new" keyword
 (define (type-of-new str)
-  (let* ((good-str (string-replace str "\n" ""))
+  (let* ((good-str (string-replace str  #px"[\n\r\t]" ""))
         (new-keyword-pos (regexp-match-positions #rx"[\\w]*[ ]*=[ ]*new[ ]*" good-str))
          (type-str #f)
          )
