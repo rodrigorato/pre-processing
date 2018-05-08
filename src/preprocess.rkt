@@ -141,7 +141,7 @@
 
 ; Gets the alias name from a particular string containing the alias active token
 (define (alias-name str)
-  (car (string-split str)))
+  (string-trim (car (regexp-split #rx"=" str))))
 
 ; Given an alias name and its value, replace it along a given string and return it
 ; THIS IS WRONG TODO FIXME 
@@ -154,11 +154,18 @@
     (cond [(null? locations) (set! new-s str)]
     [else (for ([l locations])
       ; take string up until the place where alias is used and replace by true type
-      (set! new-s
+      (cond [(regexp-match? #px"[_a-zA-Z0-9]" (substring str (cdr l) (+ (cdr l) 1)))
+             (set! new-s
+            (string-append
+             new-s
+             (substring str last-pos (cdr l))
+             ))
+             ]
+      [else (set! new-s
             (string-append
              new-s
              (substring str last-pos (+ (car l) 1))
-             alias-value))
+             alias-value))])
       (set! last-pos (cdr l))
       )
     (set! new-s
