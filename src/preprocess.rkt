@@ -54,7 +54,7 @@
 
 
 ; Checks if a given token is present in a given string
-; If it is, returns a list of lists, where the inner ones are like (str-initial-pos str-final-pos)
+; If it is, returns a list containing the next occurence
 ; If it is not, it returns #f
 (define (has-token? str token)
   (let ((positions (regexp-match-positions (regexp token) str)))
@@ -66,13 +66,16 @@
 ; | Active Token Definitions |
 ; +--------------------------+
 
+; Local Type Inference
+
 ; Finds type name of a given string which includes a type initialization using the "new" keyword
 (define (type-of-new str)
-  (let* ((good-str (string-replace str  #px"[\n\r\t]" ""))
+  (let* ((good-str (string-replace str  #px"[\n\r\t]" "")) ; since we just want the type, no need to keep original formatting
         (new-keyword-pos (regexp-match-positions #rx"[\\w]*[ ]*=[ ]*new[ ]*" good-str))
-         (type-str #f)
+        (type-str #f)
          )
     (cond
+      ; see if the var is a followed by a whitespace char 
       [(not (equal? 0 (caar (regexp-match-positions #rx"[ \n\r\t]" good-str)))) (set! type-str #f)]
       [new-keyword-pos
       (let ((first-parenthesis-pos (regexp-match-positions #rx"new[\\s]*(.*?)[(]" good-str)))
@@ -84,11 +87,11 @@
 
 ; Implements local type inference using type-of-new to find the type of a given initialization
 (def-active-token "var" (str)
-  (let ((type (type-of-new str))
+  (let ((type (type-of-new str)) ; find the type of the constructor call if any
         (final str))
     (if type
       (set! final (string-append type str))
-      (set! final (string-append "var" str)))
+      (set! final (string-append "var" str))) ; if variable not initialized just add var to string again
     final))
 
 
@@ -102,22 +105,24 @@
          (last-point 0)
          (new-s "")
          (interpol-pos (regexp-match-positions* #rx"#{(.*?)}" s))) ; get location of all interpolations
-    (cond [(null? interpol-pos) (set! new-s str)] ; interpolation required but there is nothing to do
-    [else (for ([p interpol-pos])
-      ; rebuild string the right way
-      (set! new-s
-            (string-append
-             new-s
-             (substring s last-point (car p))
-             "\" + ("
-             (substring s (+ (car p) 2) (- (cdr p) 1))
-             ") + \"" ))
-      (set! last-point (cdr p)) ; store where we stoped the last time
+    (cond
+      [(null? interpol-pos) (set! new-s str)] ; interpolation required but there is nothing to do
+      [else (for ([p interpol-pos])
+              ; rebuild string the right way
+              (set! new-s
+                    (string-append
+                     new-s
+                     (substring s last-point (car p))
+                     "\" + ("
+                     (substring s (+ (car p) 2) (- (cdr p) 1))
+                     ") + \"" ))
+              (set! last-point (cdr p)) ; store where we stoped the last time
+              )
+            ; no other occurences found so just add the rest of the string
+            (set! new-s
+                  (string-append new-s
+                                 (substring str (cdr (last interpol-pos)))))]
     )
-     ; no other occurences found so just add the rest of the string
-    (set! new-s
-          (string-append new-s
-          (substring str (cdr (last interpol-pos)))))])
     new-s))
 
 
@@ -129,6 +134,8 @@
     (string-append "#" str))
   )
 
+; Type aliases
+
 ; Gets the value that must be associated with this alias name
 (define (alias-value str) 
   (let ((definition-equals-pos (regexp-match-positions #rx"=[\\s]*" str))
@@ -139,12 +146,11 @@
         ))
     (string-trim value)))
 
-; Gets the alias name from a particular string containing the alias active token
+; Gets the name of the first alias from a particular string containing the alias active token
 (define (alias-name str)
   (string-trim (car (regexp-split #rx"=" str))))
 
 ; Given an alias name and its value, replace it along a given string and return it
-; THIS IS WRONG TODO FIXME 
 (define (replace-aliases str alias-name alias-value)
   (let* ((str-regex (string-append "[^_a-zA-Z0-9]" alias-name))
         (locations (regexp-match-positions* (regexp str-regex) str)); find locations of alias uses
@@ -152,35 +158,37 @@
         (new-s "")
         )
     (cond [(null? locations) (set! new-s str)]
-    [else (for ([l locations])
-      ; take string up until the place where alias is used and replace by true type
-      (cond [(regexp-match? #px"[_a-zA-Z0-9]" (substring str (cdr l) (+ (cdr l) 1)))
-             (set! new-s
-            (string-append
-             new-s
-             (substring str last-pos (cdr l))
-             ))
-             ]
-      [else (set! new-s
-            (string-append
-             new-s
-             (substring str last-pos (+ (car l) 1))
-             alias-value))])
-      (set! last-pos (cdr l))
+    [else
+     (for ([l locations])
+       ; take string up until the place where alias is used and replace by true type
+       ; if it's not a valid location to replace just ignore and copy string
+       (cond [(regexp-match? #px"[_a-zA-Z0-9]" (substring str (cdr l) (+ (cdr l) 1)))
+              (set! new-s
+                    (string-append
+                     new-s
+                     (substring str last-pos (cdr l))
+                     ))
+              ]
+             ; if it is valid location, replace alias value in place of alias name
+             [else (set! new-s
+                         (string-append
+                          new-s
+                          (substring str last-pos (+ (car l) 1))
+                          alias-value))])
+       (set! last-pos (cdr l))
       )
     (set! new-s
           (string-append new-s
           (substring str (cdr (last locations)))))])
     new-s))
 
-; Returns a string stripped from its first line
+; Returns a string stripped from the alias instruction present at it's start
 (define (string-after-semi-colon str) 
   (match (regexp-match-positions ";" str)
     ((list (cons start end)) (substring str end))
     (else "")))
 
 ; Type Aliases
-; TODO - Implement
 (def-active-token "alias" (str)
   (let* ((name (alias-name str))
         (value (alias-value str))
