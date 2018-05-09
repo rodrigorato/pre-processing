@@ -195,3 +195,32 @@
         (str-final (string-after-semi-colon str)))
     (set! str-final (replace-aliases str-final name value))
     str-final))
+
+
+; +------------+
+; | Extensions |
+; +------------+
+
+; C-like include macro
+
+; Returns a string stripped from it's first line
+(define (string-after-new-line str)
+  (match (regexp-match-positions "\n" str)
+    ((list (cons start end)) (substring str end))
+    (else "")))
+
+
+(def-active-token "#include" (str)
+  (let* ((include-path (car (regexp-match #px"\".*?\"[\n]" (string-trim str))))
+        (new-str (string-after-new-line str))
+        (file-str "")
+        )
+    (cond
+    [(not include-path) (set! file-str "")]
+    [else
+     (let ((path-string (simplify-path (string-trim (string-replace (string-replace include-path "\n" "") "\"" "")))))
+       (when (file-exists? path-string)
+       (set! file-str (file->string path-string)))
+      )])
+    (set! new-str (string-append file-str new-str))
+  new-str))
