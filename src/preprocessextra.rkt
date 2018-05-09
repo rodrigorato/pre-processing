@@ -128,11 +128,12 @@
 
 ; interpolates string by using our own predefined function
 (def-active-token "#" (str)
+  (let ((start-string (regexp-match-positions "\"" str)))
   ; check if we are at the start of a string
-  (if (equal? 0 (car (first(regexp-match-positions "\"" str))))
+  (if (and start-string (equal? 0 (car (first(regexp-match-positions "\"" str)))))
     (interpolate-string str)
     (string-append "#" str))
-  )
+  ))
 
 ; Type aliases
 
@@ -201,7 +202,7 @@
 ; | Extensions |
 ; +------------+
 
-; C-like include macro
+; C-like include token
 
 ; Returns a string stripped from it's first line
 (define (string-after-new-line str)
@@ -211,16 +212,86 @@
 
 
 (def-active-token "#include" (str)
-  (let* ((include-path (car (regexp-match #px"\".*?\"[\n]" (string-trim str))))
+  (let* ((include-path (regexp-match #px"\".*?\"[\n]" (string-trim str)))
         (new-str (string-after-new-line str))
         (file-str "")
         )
     (cond
-    [(not include-path) (set! file-str "")]
+    [(not include-path) (set! file-str (string-append "#include" str))]
     [else
-     (let ((path-string (simplify-path (string-trim (string-replace (string-replace include-path "\n" "") "\"" "")))))
+     (let ((path-string (simplify-path (string-trim (string-replace (string-replace (car include-path) "\n" "") "\"" "")))))
        (when (file-exists? path-string)
        (set! file-str (file->string path-string)))
       )])
     (set! new-str (string-append file-str new-str))
   new-str))
+
+
+; getter and setter generation for Java(only functional for non-initialized variables)
+
+; returns a string representing a public Java get method for the specified var name and type
+(define (generate-getter type name)
+  (string-append "\n\tpublic " type " get" name "(){\n"
+                 "\t return this." name ";\n}")
+)
+
+
+; returns a string representing a public Java set method for the specified var name and type
+(define (generate-setter type name)
+  (string-append "\n\tpublic void set" name "(" type " " name "){\n"
+                 "\t this." name " = " name ";\n}")
+)
+
+(def-active-token "#get" (str)
+ (let ((var-decl (regexp-match #px".*?[^;];" str)); find first semi-colon for end of var declaration
+       (var-split "")
+       (new-str str))
+   (when var-decl
+     (set! var-split (string-split (string-trim (car var-decl))))
+     (when (>= (length var-split) 2)
+       (let ((type-and-name (list-tail var-split (- (length var-split) 2)))
+             (insert-location (cdar (regexp-match-positions #px".*?[^;];" str)))
+             )
+         (set! new-str (string-append (substring str 0 insert-location)
+                                      (generate-getter (first type-and-name) (string-replace (last type-and-name) ";" ""))
+                                      (substring str insert-location)
+                                      ))
+         )
+       )
+     )
+   
+  new-str))
+
+(def-active-token "#set" (str)
+  (let ((var-decl (regexp-match #px".*?[^;]" str)); find first semi-colon for end of var declaration
+       (var-split "")
+       (new-str str))
+   (when var-decl
+     (set! var-split (string-split (string-trim (car var-decl))))
+     (when (>= (length var-split) 2)
+       (let ((type-and-name (list-tail var-split (- (length var-split) 2)))
+             (insert-location (cdar (regexp-match-positions #px".*?[^;]" str)))
+             )
+         (set! new-str (string-append (substring str 0 insert-location)
+                                      (generate-setter (first type-and-name) (last type-and-name))
+                                      (substring str insert-location)
+                                      ))
+         )
+       )
+     )
+   
+  new-str))
+
+(define test-str
+#<<END
+public class Foo{
+
+  alias Type = String;
+
+  #set #get public int i;
+
+  #get #set Type s;
+
+}
+END
+)
