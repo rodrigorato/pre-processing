@@ -242,45 +242,39 @@
                  " this." name " = " name ";}\n")
 )
 
-(def-active-token "#get" (str)
- (let ((var-decl (regexp-match #px".*?[^;];" str)); find first semi-colon for end of var declaration
+(define (get-type-and-name str)
+  (let ((var-decl (regexp-match #px".*?[^;](;|=)" str)); find first semi-colon for end of var declaration
        (var-split "")
-       (new-str str))
+       (type-and-name #f))
    (when var-decl
-     (set! var-split (string-split (string-trim (car var-decl))))
+     (set! var-split (string-split (string-replace (string-trim (car var-decl)) "=" "")))
      (when (>= (length var-split) 2)
-       (let ((type-and-name (list-tail var-split (- (length var-split) 2)))
-             (insert-location (cdar (regexp-match-positions #px".*?[^;];" str)))
-             )
-         (set! new-str (string-append (substring str 0 insert-location)
-                                      (generate-getter (first type-and-name) (string-replace (last type-and-name) ";" ""))
-                                      (substring str insert-location)
-                                      ))
-         )
+       (set! type-and-name (list-tail var-split (- (length var-split) 2)))
        )
      )
-   
+    (displayln type-and-name)
+   type-and-name)
+ )
+
+(define (generate-getter-or-setter func str)
+  (let ((type-and-name (get-type-and-name str))
+        (new-str str)
+        (insert-location (cdar (regexp-match-positions #px".*?[^;];" str)))
+        )
+    (when type-and-name
+      (set! new-str (string-append (substring str 0 insert-location)
+                                      (func (first type-and-name) (string-replace (last type-and-name) ";" ""))
+                                      (substring str insert-location)
+                                      ))
+      )
   new-str))
 
+(def-active-token "#get" (str)
+  (generate-getter-or-setter generate-getter str))
+
 (def-active-token "#set" (str)
-  (let ((var-decl (regexp-match #px".*?[^;];" str)); find first semi-colon for end of var declaration
-       (var-split "")
-       (new-str str))
-   (when var-decl
-     (set! var-split (string-split (string-trim (car var-decl))))
-     (when (>= (length var-split) 2)
-       (let ((type-and-name (list-tail var-split (- (length var-split) 2)))
-             (insert-location (cdar (regexp-match-positions #px".*?[^;];" str)))
-             )
-         (set! new-str (string-append (substring str 0 insert-location)
-                                      (generate-setter (first type-and-name) (string-replace (last type-and-name) ";" ""))
-                                      (substring str insert-location)
-                                      ))
-         )
-       )
-     )
-   
-  new-str))
+  (generate-getter-or-setter generate-setter str))
+
 
 (define test-str
 #<<END
@@ -288,9 +282,9 @@ public class Foo{
 
   alias Cache = ConcurrentSkipListMap<String,List<Map<String,Object>>>;
 
-  #set #get public int i;
+#set #get public int i = 1;
 
-  #get #set Cache s;
+#get #set Cache s = new Cache();
 
 }
 END
