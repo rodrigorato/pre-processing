@@ -128,11 +128,12 @@
 
 ; interpolates string by using our own predefined function
 (def-active-token "#" (str)
+  (let ((start-string (regexp-match-positions "\"" str)))
   ; check if we are at the start of a string
-  (if (equal? 0 (car (first(regexp-match-positions "\"" str))))
+  (if (and start-string (equal? 0 (car (first(regexp-match-positions "\"" str)))))
     (interpolate-string str)
     (string-append "#" str))
-  )
+  ))
 
 ; Type aliases
 
