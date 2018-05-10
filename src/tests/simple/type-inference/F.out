@@ -1,0 +1,13 @@
+public class Foo {
+    public static void main(String[] args) {
+		G a= new G();
+		F b =new F();
+		E c=new E();
+		D 	 d= 	new D();
+		C e = 
+				new C();
+		B 
+			f = new B(); A 
+			g = new A()		;
+    }
+}

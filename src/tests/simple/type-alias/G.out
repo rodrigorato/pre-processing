@@ -1,0 +1,24 @@
+class Foo { 
+	
+
+	
+
+	public static Double m (int s) {
+		Double a = 2.0, b = 1.99;
+		Double c;
+
+		return (Double) a + b;
+	}
+
+	
+	
+	
+
+	public static Double m (Integer s) {
+		return (Double)(Integer.valueOf(2.0) + 0);
+	}
+
+	public static main(String[] args) {
+		System.out.println("This test has 24 lines :O");
+	}
+}

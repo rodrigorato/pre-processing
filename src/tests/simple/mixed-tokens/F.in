@@ -1,0 +1,10 @@
+public class Foo {
+	alias display = System.out.println;
+	alias var = String[];
+	public static void main(var args) {
+		var s = new var() { "One", "Two", "Three"};
+
+		for (int i = 0; i < 3; i++)
+			display(#"{s[i]}");
+	}
+}

@@ -1,0 +1,5 @@
+public class Foo {
+    public void foo(String[] args) {
+    	String s = new String("" + (args[0]) + "");
+    }
+}

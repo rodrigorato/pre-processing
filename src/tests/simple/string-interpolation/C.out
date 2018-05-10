@@ -1,0 +1,5 @@
+public class Foo {
+    public void foo(String[] args) {
+    	String a = "First " + (a) + ", then " + (a+b) + ", finally " + (b*c) + ".";
+    }
+}

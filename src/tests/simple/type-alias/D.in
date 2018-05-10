@@ -1,0 +1,4 @@
+alias S = String; alias i=Integer;
+public class Foo {
+	public static S foo(S a, i b) { }
+}

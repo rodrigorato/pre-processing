@@ -1,0 +1,33 @@
+import java.util.*;
+import java.util.concurrent.*;
+
+alias display = System.out.println;
+
+public class Example2 {
+
+    public static void main(String[] args) {
+		//Another great idea from our beloved client
+		var y = new ArrayList<ArrayList<Integer>>();
+		foo(1,2,3);
+	        int curDate = 0;
+	        if (curYear > 2018) {
+	            display(curYear);
+	        }
+    }
+
+    alias i = int;
+
+    static void foo(i a, int b, int c) {
+		String str = #"First #{a}, then #{a+b}, finally #{b*c}.";
+		display(str);
+        display(byebye);
+        display((bar));
+    }
+
+    alias Cache = ConcurrentSkipListMap<String,List<Map<String,Map<String,Map<String,Object>>>>>;
+
+    public static Cache mergeCaches(Cache a, Cache b) {
+		var temp = new Cache();
+		return temp;
+    }
+}
