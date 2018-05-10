@@ -212,22 +212,23 @@
 
 
 (def-active-token "#include" (str)
-  (let* ((include-path (regexp-match #px"\".*?\"[\n]" (string-trim str)))
-        (new-str (string-after-new-line str))
-        (file-str "")
-        )
+  (let* ((include-path (regexp-match #px"\".*?\"[\n]" (string-trim str))) ; get the rest of the line where the token was found
+         (new-str (string-after-new-line str)) ; remove include line from code
+         (file-str "")
+         )
     (cond
-    [(not include-path) (set! file-str (string-append "#include" str))]
-    [else
-     (let ((path-string (simplify-path (string-trim (string-replace (string-replace (car include-path) "\n" "") "\"" "")))))
-       (when (file-exists? path-string)
-       (set! file-str (file->string path-string)))
-      )])
-    (set! new-str (string-append file-str new-str))
-  new-str))
+      [(not include-path) (set! file-str (string-append "#include" str))] ; no path after include
+      [else
+       ; remove all extra chars from string and turn path into a valid path for the system
+       (let ((path-string (simplify-path (string-trim (string-replace (string-replace (car include-path) "\n" "") "\"" "")))))
+         (when (file-exists? path-string) ; check if the path is for a file that exists
+           (set! file-str (file->string path-string))) ; get the file contents as a string
+         )])
+    (set! new-str (string-append file-str new-str)) ; add the contents of the file, if any
+    new-str))
 
 
-; getter and setter generation for Java(only functional for non-initialized variables)
+; getter and setter generation for Java
 
 ; returns a string representing a public Java get method for the specified var name and type
 (define (generate-getter type name)
@@ -242,50 +243,36 @@
                  " this." name " = " name ";}\n")
 )
 
+; get the type and name of the first member field declaration in the code
 (define (get-type-and-name str)
   (let ((var-decl (regexp-match #px".*?[^;](;|=)" str)); find first semi-colon for end of var declaration
-       (var-split "")
-       (type-and-name #f))
-   (when var-decl
-     (set! var-split (string-split (string-replace (string-trim (car var-decl)) "=" "")))
-     (when (>= (length var-split) 2)
-       (set! type-and-name (list-tail var-split (- (length var-split) 2)))
-       )
-     )
-    (displayln type-and-name)
-   type-and-name)
- )
+        (var-split "")
+        (type-and-name #f))
+    (when var-decl
+      (set! var-split (string-split (string-replace (string-trim (car var-decl)) "=" ""))); remove = from end of declaration
+      (when (>= (length var-split) 2) ; see if we have a type and a variable name at least
+        (set! type-and-name (list-tail var-split (- (length var-split) 2)))
+        )
+      )
+    type-and-name)
+  )
 
+; generate a setter or a getter based on the function we passed
 (define (generate-getter-or-setter func str)
   (let ((type-and-name (get-type-and-name str))
         (new-str str)
-        (insert-location (cdar (regexp-match-positions #px".*?[^;];" str)))
+        (insert-location (cdar (regexp-match-positions #px".*?[^;];" str))) ; find the end of the variable declaration
         )
-    (when type-and-name
+    (when type-and-name ; if a type and name were found insert getter/setter after atribute declaration
       (set! new-str (string-append (substring str 0 insert-location)
-                                      (func (first type-and-name) (string-replace (last type-and-name) ";" ""))
-                                      (substring str insert-location)
-                                      ))
+                                   (func (first type-and-name) (string-replace (last type-and-name) ";" ""))
+                                   (substring str insert-location)
+                                   ))
       )
-  new-str))
+    new-str))
 
 (def-active-token "#get" (str)
-  (generate-getter-or-setter generate-getter str))
+  (generate-getter-or-setter generate-getter str)) ; call the generator function with the getter function
 
 (def-active-token "#set" (str)
-  (generate-getter-or-setter generate-setter str))
-
-
-(define test-str
-#<<END
-public class Foo{
-
-  alias Cache = ConcurrentSkipListMap<String,List<Map<String,Object>>>;
-
-#set #get public int i = 1;
-
-#get #set Cache s = new Cache();
-
-}
-END
-)
+  (generate-getter-or-setter generate-setter str)) ; call the generator function with the setter function
