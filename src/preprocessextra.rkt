@@ -231,15 +231,15 @@
 
 ; returns a string representing a public Java get method for the specified var name and type
 (define (generate-getter type name)
-  (string-append "\n\tpublic " type " get" name "(){\n"
-                 "\t return this." name ";\n}")
+  (string-append "\npublic " type " get" name "(){"
+                 " return this." name ";}\n")
 )
 
 
 ; returns a string representing a public Java set method for the specified var name and type
 (define (generate-setter type name)
-  (string-append "\n\tpublic void set" name "(" type " " name "){\n"
-                 "\t this." name " = " name ";\n}")
+  (string-append "\npublic void set" name "(" type " " name "){"
+                 " this." name " = " name ";}\n")
 )
 
 (def-active-token "#get" (str)
@@ -263,17 +263,17 @@
   new-str))
 
 (def-active-token "#set" (str)
-  (let ((var-decl (regexp-match #px".*?[^;]" str)); find first semi-colon for end of var declaration
+  (let ((var-decl (regexp-match #px".*?[^;];" str)); find first semi-colon for end of var declaration
        (var-split "")
        (new-str str))
    (when var-decl
      (set! var-split (string-split (string-trim (car var-decl))))
      (when (>= (length var-split) 2)
        (let ((type-and-name (list-tail var-split (- (length var-split) 2)))
-             (insert-location (cdar (regexp-match-positions #px".*?[^;]" str)))
+             (insert-location (cdar (regexp-match-positions #px".*?[^;];" str)))
              )
          (set! new-str (string-append (substring str 0 insert-location)
-                                      (generate-setter (first type-and-name) (last type-and-name))
+                                      (generate-setter (first type-and-name) (string-replace (last type-and-name) ";" ""))
                                       (substring str insert-location)
                                       ))
          )
@@ -286,11 +286,11 @@
 #<<END
 public class Foo{
 
-  alias Type = String;
+  alias Cache = ConcurrentSkipListMap<String,List<Map<String,Object>>>;
 
   #set #get public int i;
 
-  #get #set Type s;
+  #get #set Cache s;
 
 }
 END
