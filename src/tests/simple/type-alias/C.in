@@ -1,0 +1,5 @@
+alias S 		= String;
+public class Foo {
+	public static S foo(S a, Integer b) {		
+	}
+}

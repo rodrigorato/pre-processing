@@ -1,0 +1,1 @@
+public class Foo {public static void vertical(String va, String new) {String y = new String("Hey, you! Get off of my cloud!");System.out.println(y);}}

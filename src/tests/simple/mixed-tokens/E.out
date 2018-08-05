@@ -1,0 +1,33 @@
+import java.util.*;
+import java.util.concurrent.*;
+
+
+
+public class Example2 {
+
+    public static void main(String[] args) {
+		//Another great idea from our beloved client
+		ArrayList<ArrayList<Integer>> y = new ArrayList<ArrayList<Integer>>();
+		foo(1,2,3);
+	        int curDate = 0;
+	        if (curYear > 2018) {
+	            System.out.println(curYear);
+	        }
+    }
+
+    
+
+    static void foo(int a, int b, int c) {
+		String str = "First " + (a) + ", then " + (a+b) + ", finally " + (b*c) + ".";
+		System.out.println(str);
+        System.out.println(byebye);
+        System.out.println((bar));
+    }
+
+    
+
+    public static ConcurrentSkipListMap<String,List<Map<String,Map<String,Map<String,Object>>>>> mergeCaches(ConcurrentSkipListMap<String,List<Map<String,Map<String,Map<String,Object>>>>> a, ConcurrentSkipListMap<String,List<Map<String,Map<String,Map<String,Object>>>>> b) {
+		ConcurrentSkipListMap<String,List<Map<String,Map<String,Map<String,Object>>>>> temp = new ConcurrentSkipListMap<String,List<Map<String,Map<String,Map<String,Object>>>>>();
+		return temp;
+    }
+}

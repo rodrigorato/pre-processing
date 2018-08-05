@@ -1,0 +1,7 @@
+alias a0 = "#{args[0]}";
+public class Foo {
+	alias display = System.out.println;
+    public void foo(String[] args) {
+    	display(#a0);
+    }
+}

@@ -1,0 +1,8 @@
+public class Foo {
+	public static void main(String[] args) {
+		alias bar = new F() { void f () {}};
+		alias F = Foo;
+		F f = bar;
+		f.f();
+	}
+}

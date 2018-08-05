@@ -1,0 +1,6 @@
+alias str = String[];
+public class Foo {
+	public static void handleConstraints(str strs) {
+		str[] constraints;
+	}
+}

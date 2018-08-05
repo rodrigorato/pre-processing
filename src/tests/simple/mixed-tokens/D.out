@@ -1,0 +1,7 @@
+
+public class Foo {
+	
+    public void foo(String[] args) {
+    	System.out.println("" + (args[0]) + "");
+    }
+}

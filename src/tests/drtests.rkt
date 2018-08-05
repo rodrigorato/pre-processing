@@ -1,0 +1,16 @@
+(for ([dir (directory-list "tests/simple/"  #:build? #t)])
+  (for ([file (directory-list dir  #:build? #t)])
+    
+    (cond [(equal? (path-get-extension file) #".in")
+           (define inputString (port->string (open-input-file file)))
+           (define outputString (port->string (open-input-file (string-replace (path->string file) ".in" ".out"))))
+           (define myOutputString (process-string inputString))
+           (define out (open-output-file (string-replace (path->string file) ".in" ".myout") #:exists 'replace))
+           (display myOutputString out)
+           (close-output-port out)
+           (println file)
+           (println (equal? outputString myOutputString))
+    ])
+    
+  )
+)

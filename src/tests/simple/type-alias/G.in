@@ -1,0 +1,24 @@
+class Foo { 
+	alias fooMain = public static main(String[] args);
+
+	alias dbl = Double;
+
+	public static dbl m (int s) {
+		dbl a = 2.0, b = 1.99;
+		dbl c;
+
+		return (dbl) a + b;
+	}
+
+	alias castToDouble = (dbl);
+	alias itg = Integer;
+	alias zero = 0;
+
+	public static dbl m (itg s) {
+		return castToDouble(itg.valueOf(2.0) + zero);
+	}
+
+	fooMain {
+		System.out.println("This test has 24 lines :O");
+	}
+}

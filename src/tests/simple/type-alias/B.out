@@ -1,0 +1,6 @@
+
+public class Foo {
+	public static ConcurrentSkipListMap<String,List<Map<String,Object>>> mergeCaches(ConcurrentSkipListMap<String,List<Map<String,Object>>> a, ConcurrentSkipListMap<String,List<Map<String,Object>>> b) {
+		ConcurrentSkipListMap<String,List<Map<String,Object>>> vary = new ConcurrentSkipListMap<String,List<Map<String,Object>>>();
+	}
+}

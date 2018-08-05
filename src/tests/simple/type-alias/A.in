@@ -1,0 +1,4 @@
+alias Cache = ConcurrentSkipListMap<String,List<Map<String,Object>>>;
+public class Foo {
+	
+}

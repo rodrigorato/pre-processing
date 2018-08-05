@@ -1,0 +1,7 @@
+public class Foo {
+    public String foo(String[] args) {
+    	
+    	String[] arg1 = new String[](){"" + (args[0]) + "", "" + (args[1] + args[2]) + ""};
+    	return arg1.toString();
+    }
+}

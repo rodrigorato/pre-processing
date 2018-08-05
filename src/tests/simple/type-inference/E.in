@@ -1,0 +1,10 @@
+public class Foo {
+    public static void main(String[] args) {
+		VAR x = new X();
+		Var x = new X();
+		vaR x = new X();
+		vAr x = new X();
+		vAR x = new X();
+		VAr x = new X();
+    }
+}
