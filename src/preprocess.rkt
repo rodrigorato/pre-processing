@@ -23,7 +23,7 @@
 (define-syntax-rule (def-active-token token-name token-func-args token-func-code)
   (add-active-token token-name (lambda token-func-args token-func-code)))
 
-; Iterates over the known tokens and applies them to s until no change is made
+; Iterates over the known tokens and applies them to the string s until no change is made
 (define (process-string s)
   (let ((token-names (hash-keys active-tokens))
         (previous-s s))
