@@ -1,7 +1,7 @@
 # pre-processing
 Language independent pre-processor, implemented in Racket.
 
-# Running the pre-processor
+# Running the pre-processor interactively
 To have a Racket interpreter running and interact with it, you can use:
 `racket -f src/preprocess.rkt -i`
 
